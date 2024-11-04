@@ -1,5 +1,6 @@
 [workspace]
 resolver = "2"
 members = [
-  "m1",
+    "common",
+    "m1",
 ]
