@@ -30,6 +30,10 @@ impl ZoneTree {
             current,
         }
     }
+
+    pub fn current_zone_mut(&mut self) -> Option<&mut Zone> {
+        self.root.get_mut(self.current)
+    }
 }
 
 pub enum ZoneNode {
@@ -37,8 +41,51 @@ pub enum ZoneNode {
     Leaf(Zone),
 }
 
+impl ZoneNode {
+    pub fn get_mut(&mut self, id: u32) -> Option<&mut Zone> {
+        match self {
+            ZoneNode::Branch(leaves) => {
+                for leaf in leaves {
+                    if let Some(zone) = leaf.get_mut(id) {
+                        return Some(zone);
+                    }
+                }
+                None
+            }
+            ZoneNode::Leaf(zone) => {
+                if zone.id == id {
+                    Some(zone)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
+    pub fn topmost_mut(&mut self) -> Option<&mut Zone> {
+        match self {
+            ZoneNode::Branch(leaves) => {
+                for leaf in leaves {
+                    if let Some(zone) = leaf.topmost_mut() {
+                        return Some(zone);
+                    }
+                }
+                None
+            }
+            ZoneNode::Leaf(zone) => Some(zone),
+        }
+    }
+}
+
 /// A zone is a portion of the screen.
 /// See [make_zone] for details on how to create zones.
 pub struct Zone {
     id: u32,
+}
+
+impl Zone {
+    pub fn id(&self) -> u32 {
+        self.id
+    }
+
 }
