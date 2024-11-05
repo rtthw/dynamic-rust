@@ -3,4 +3,5 @@ resolver = "2"
 members = [
     "common",
     "m1",
+    "m4",
 ]

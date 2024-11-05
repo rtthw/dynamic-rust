@@ -42,5 +42,8 @@ Customize your application by piping data through your shell.
 </details>
 
 <details>
-<summary><h3>Method 4: </h3></summary>
+<summary><h3>Method 4: Rhai Scripting</h3></summary>
+
+Customize your application with an embedded, rust-based scripting language.
+
 </details>
