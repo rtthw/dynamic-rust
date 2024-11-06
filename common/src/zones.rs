@@ -48,6 +48,38 @@ impl ZoneTree {
     pub fn current_node_mut(&mut self) -> Option<&mut ZoneNode> {
         self.root.node_mut(self.current)
     }
+
+    pub fn current_parent_node(&self) -> (&ZoneNode, bool) {
+        if let ZoneNode::Leaf(_zone) = &self.root {
+            return (&self.root, false);
+        }
+        
+        fn iter_for_parent<'a>(
+            parent: &mut Option<&'a ZoneNode>,
+            child_id: u32,
+            node: &'a ZoneNode,
+        ) -> bool {
+            match node {
+                ZoneNode::Leaf(zone) => zone.id == child_id,
+                n => {
+                    let _old = parent.replace(n);
+                    let ZoneNode::Branch(_, children) = n else { return false; };
+                    for child in children {
+                        if iter_for_parent(parent, child_id, child) {
+                            return true;
+                        }
+                    }
+                    false
+                }
+            }
+        }
+
+        let mut parent = None;
+
+        let found_parent = iter_for_parent(&mut parent, self.current, &self.root);
+
+        (parent.unwrap_or(&self.root), found_parent)
+    }
 }
 
 impl ZoneTree {
@@ -57,6 +89,21 @@ impl ZoneTree {
             let new_node = ZoneNode::Leaf(make_zone());
             // TODO: If ZoneNode stops being clonable, then work some magic here.
             let _old = std::mem::replace(node, ZoneNode::Branch(branch_kind, vec![owned_node, new_node]));
+        }
+    }
+}
+
+impl ZoneTree {
+    pub fn move_current(&mut self, movement: ZoneMovement) {
+        // We only want to move the current node index if it's possible to do so.
+        let (ZoneNode::Branch(kind, leaves), true) = self.current_parent_node() else {
+            return;
+        };
+        match movement {
+            ZoneMovement::Left => {}
+            ZoneMovement::Right => {}
+            ZoneMovement::Up => {}
+            ZoneMovement::Down => {}
         }
     }
 }
@@ -187,6 +234,14 @@ impl Zone {
 pub enum ZoneBranch {
     Horizontal,
     Vertical,
+}
+
+#[derive(Clone, Copy)]
+pub enum ZoneMovement {
+    Left,
+    Right,
+    Up,
+    Down,
 }
 
 
