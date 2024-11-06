@@ -45,26 +45,26 @@ impl ZoneTree {
 }
 
 impl ZoneTree {
-    pub fn split_current(&mut self) {
+    pub fn split_current(&mut self, branch_kind: ZoneBranch) {
         if let Some(node) = self.current_node_mut() {
             let owned_node = node.clone();
             let new_node = ZoneNode::Leaf(make_zone());
             // TODO: If ZoneNode stops being clonable, then work some magic here.
-            let _old = std::mem::replace(node, ZoneNode::Branch(vec![owned_node, new_node]));
+            let _old = std::mem::replace(node, ZoneNode::Branch(branch_kind, vec![owned_node, new_node]));
         }
     }
 }
 
 #[derive(Clone)]
 pub enum ZoneNode {
-    Branch(Vec<ZoneNode>),
+    Branch(ZoneBranch, Vec<ZoneNode>),
     Leaf(Zone),
 }
 
 impl ZoneNode {
     pub fn zone_mut(&mut self, id: u32) -> Option<&mut Zone> {
         match self {
-            ZoneNode::Branch(leaves) => {
+            ZoneNode::Branch(_kind, leaves) => {
                 for leaf in leaves {
                     if let Some(zone) = leaf.zone_mut(id) {
                         return Some(zone);
@@ -84,7 +84,7 @@ impl ZoneNode {
 
     pub fn node_mut(&mut self, id: u32) -> Option<&mut ZoneNode> {
         match self {
-            ZoneNode::Branch(leaves) => {
+            ZoneNode::Branch(_kind, leaves) => {
                 for leaf in leaves {
                     if let Some(zone) = leaf.node_mut(id) {
                         return Some(zone);
@@ -104,7 +104,7 @@ impl ZoneNode {
 
     pub fn topmost_zone_mut(&mut self) -> Option<&mut Zone> {
         match self {
-            ZoneNode::Branch(leaves) => {
+            ZoneNode::Branch(_kind, leaves) => {
                 for leaf in leaves {
                     if let Some(zone) = leaf.topmost_zone_mut() {
                         return Some(zone);
@@ -117,7 +117,7 @@ impl ZoneNode {
     }
 
     pub fn is_branch(&self) -> bool {
-        matches!(self, ZoneNode::Branch(_))
+        matches!(self, ZoneNode::Branch(_, _))
     }
 }
 
@@ -134,6 +134,12 @@ impl Zone {
     }
 }
 
+#[derive(Clone, Copy)]
+pub enum ZoneBranch {
+    Horizontal,
+    Vertical,
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -143,7 +149,7 @@ mod tests {
     fn zone_splitting_works() {
         let mut tree = ZoneTree::new();
         assert!(tree.current_zone_mut().is_some_and(|z| z.id() == 0));
-        tree.split_current();
+        tree.split_current(ZoneBranch::Horizontal);
         assert!(tree.root_node_mut().is_branch());
     }
 }
