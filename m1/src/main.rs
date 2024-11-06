@@ -1,22 +1,30 @@
 
 
 
-use common::dreg::prelude::*;
+use common::{dreg::prelude::*, zones::ZoneTree};
 
 
 
-fn main() {
-    println!("Hello, world!");
+fn main() -> Result<()> {
+    let mut tree = ZoneTree::new();
+    tree.split_current(common::zones::ZoneBranch::Vertical);
+    CrosstermPlatform::new()?
+        .run(M1Program {
+            should_exit: false,
+            tree,
+        })
 }
 
 struct M1Program {
     should_exit: bool,
+    tree: ZoneTree,
 }
 
 impl Program for M1Program {
-    fn update(&mut self, frame: Frame) {
-        let area = frame.area;
-        frame.buffer.set_stringn(area.x, area.y, "TODO: M1", area.width as usize, Style::new());
+    fn update(&mut self, mut frame: Frame) {
+        self.tree.root_node_mut().render_with_cb(&mut |node, area, buf| {
+            
+        }, frame.area, &mut frame.buffer);
     }
 
     fn on_input(&mut self, input: Input) {

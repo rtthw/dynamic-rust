@@ -2,6 +2,12 @@
 
 
 
+use dreg::prelude::*;
+
+use crate::widgets::Block;
+
+
+
 static mut ZONES: u32 = 0;
 
 // SAFETY: This must never be called concurrently.
@@ -62,6 +68,39 @@ pub enum ZoneNode {
 }
 
 impl ZoneNode {
+    pub fn render_with_cb(
+        &mut self, 
+        cb: &mut impl FnMut(&mut Zone, Rect, &mut Buffer),
+        area: Rect,
+        buf: &mut Buffer,
+    ) {
+        match self {
+            ZoneNode::Branch(ZoneBranch::Horizontal, leaves) => {
+                let main_width = area.width / leaves.len() as u16;
+                let last_width = area.width - (main_width * (leaves.len() - 1) as u16);    
+            }
+            ZoneNode::Branch(ZoneBranch::Vertical, leaves) => {
+                let main_height = area.height / leaves.len() as u16;
+                let i_len = leaves.len() - 1;
+                let mut real_area = area;
+                for (index, leaf) in leaves.iter_mut().enumerate() {
+                    let (leaf_area, area) = if index == i_len {
+                        (real_area, Rect::ZERO)
+                    } else {
+                        real_area.vsplit_len(main_height)
+                    };
+                    real_area = area;
+                    leaf.render_with_cb(cb, leaf_area, buf);
+                }
+            }
+            ZoneNode::Leaf(zone) => {
+                Block.render(area, buf);
+                let inner = area.inner(1, 1);
+                cb(zone, inner, buf);
+            }
+        }
+    }
+
     pub fn zone_mut(&mut self, id: u32) -> Option<&mut Zone> {
         match self {
             ZoneNode::Branch(_kind, leaves) => {
