@@ -14,9 +14,20 @@
 
 # Dynamic Rust
 
-A comprehensive guide on how to approach modular programming in Rust.
+A comprehensive guide to modular programming in Rust.
 
 ## Overview
+
+- Keybinding
+  - With configuration files.
+  - With a scripting engine.
+- Plugins
+  - With dynamic libraries.
+  - With a scripting engine.
+- Event Hooks
+  - With a scripting engine.
+  - With configuration files.
+  - With services.
 
 ## Methods
 
@@ -45,5 +56,12 @@ Customize your application by piping data through your shell.
 <summary><h3>Method 4: Rhai Scripting</h3></summary>
 
 Customize your application with an embedded, rust-based scripting language.
+
+</details>
+
+<details>
+<summary><h3>Method 5: D-Bus Services</h3></summary>
+
+Customize your application by providing end users with a service that can be accessed in a variety of ways.
 
 </details>
