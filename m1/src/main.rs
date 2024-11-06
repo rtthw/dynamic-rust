@@ -1,3 +1,38 @@
+
+
+
+use common::dreg::prelude::*;
+
+
+
 fn main() {
     println!("Hello, world!");
+}
+
+struct M1Program {
+    should_exit: bool,
+}
+
+impl Program for M1Program {
+    fn update(&mut self, frame: Frame) {
+        let area = frame.area;
+        frame.buffer.set_stringn(area.x, area.y, "TODO: M1", area.width as usize, Style::new());
+    }
+
+    fn on_input(&mut self, input: Input) {
+        match input {
+            Input::KeyDown(Scancode::Q) => {
+                self.should_exit = true;
+            }
+            _ => {}
+        }
+    }
+
+    fn on_platform_request(&mut self, _request: &str) -> Option<&str> {
+        None
+    }
+
+    fn should_exit(&self) -> bool {
+        self.should_exit
+    }
 }
