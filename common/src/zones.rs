@@ -37,6 +37,10 @@ impl ZoneTree {
         }
     }
 
+    pub fn current(&self) -> u32 {
+        self.current
+    }
+
     pub fn root_node_mut(&mut self) -> &mut ZoneNode {
         &mut self.root
     }
@@ -117,7 +121,8 @@ pub enum ZoneNode {
 impl ZoneNode {
     pub fn render_with_cb(
         &mut self, 
-        cb: &mut impl FnMut(&mut Zone, Rect, &mut Buffer),
+        cb: &mut impl FnMut(&mut Zone, bool, Rect, &mut Buffer),
+        current_id: u32,
         area: Rect,
         buf: &mut Buffer,
     ) {
@@ -133,7 +138,7 @@ impl ZoneNode {
                         real_area.hsplit_len(main_width)
                     };
                     real_area = area;
-                    leaf.render_with_cb(cb, leaf_area, buf);
+                    leaf.render_with_cb(cb, current_id, leaf_area, buf);
                 }
             }
             ZoneNode::Branch(ZoneBranch::Vertical, leaves) => {
@@ -147,13 +152,11 @@ impl ZoneNode {
                         real_area.vsplit_len(main_height)
                     };
                     real_area = area;
-                    leaf.render_with_cb(cb, leaf_area, buf);
+                    leaf.render_with_cb(cb, current_id, leaf_area, buf);
                 }
             }
             ZoneNode::Leaf(zone) => {
-                Block.render(area, buf);
-                let inner = area.inner(1, 1);
-                cb(zone, inner, buf);
+                cb(zone, zone.id == current_id, area, buf);
             }
         }
     }
