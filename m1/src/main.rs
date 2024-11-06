@@ -25,11 +25,12 @@ impl Program for M1Program {
     fn update(&mut self, mut frame: Frame) {
         let current = self.tree.current();
         self.tree.root_node_mut().render_with_cb(&mut |zone, is_current, area, buf| {
-            Block.render(area, buf);
-            if is_current {
-                let inner = area.inner_centered(7, 5);
-                Block.render(inner, buf);
-            }
+            let style = if is_current {
+                Style::new().bold()
+            } else {
+                Style::new().dim()
+            };
+            Block::new(style).render(area, buf);
         }, current, frame.area, &mut frame.buffer);
     }
 
