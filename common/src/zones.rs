@@ -101,33 +101,48 @@ impl ZoneTree {
         let (ZoneNode::Branch(kind, leaves), true) = self.current_parent_node() else {
             return;
         };
-        match movement {
-            ZoneMovement::Left => {
-                if matches!(kind, ZoneBranch::Horizontal) {
-                    let mut last_topmost: Option<&Zone> = None;
-                    'find: for leaf in leaves.iter() {
-                        let Some(current) = leaf.topmost_zone() else { continue; };
-                        if current.id == self.current {
-                            if let Some(zone) = last_topmost {
-                                self.current = zone.id;
-                                return;
-                            } else {
-                                break 'find;
-                            }
+        match (movement, kind) {
+            (ZoneMovement::Left, ZoneBranch::Horizontal)
+            | (ZoneMovement::Up, ZoneBranch::Vertical) => {
+                let mut last_topmost: Option<&Zone> = None;
+                'find: for leaf in leaves.iter() {
+                    let Some(current) = leaf.topmost_zone() else { continue; };
+                    if current.id == self.current {
+                        if let Some(zone) = last_topmost {
+                            self.current = zone.id;
+                            return;
+                        } else {
+                            break 'find;
                         }
-                        last_topmost = Some(current);
                     }
-                    // The leftmost zone was either never found, or invalid. Set to last topmost.
-                    for leaf in leaves.iter().rev() {
-                        let Some(current) = leaf.topmost_zone() else { continue; };
+                    last_topmost = Some(current);
+                }
+                // The backmost zone was either never found, or invalid. Set to last topmost.
+                for leaf in leaves.iter().rev() {
+                    let Some(current) = leaf.topmost_zone() else { continue; };
+                    self.current = current.id;
+                    return;
+                }
+            }
+            (ZoneMovement::Right, ZoneBranch::Horizontal)
+            | (ZoneMovement::Down, ZoneBranch::Vertical) => {
+                let mut last_topmost: Option<&Zone> = None;
+                for leaf in leaves.iter() {
+                    let Some(current) = leaf.topmost_zone() else { continue; };
+                    if last_topmost.is_some_and(|z| z.id == self.current) {
                         self.current = current.id;
                         return;
                     }
+                    last_topmost = Some(current);
+                }
+                // The foremost zone was either never found, or invalid. Set to first topmost.
+                for leaf in leaves.iter() {
+                    let Some(current) = leaf.topmost_zone() else { continue; };
+                    self.current = current.id;
+                    return;
                 }
             }
-            ZoneMovement::Right => {}
-            ZoneMovement::Up => {}
-            ZoneMovement::Down => {}
+            _ => {} // TODO: Grandparent-level movements.
         }
     }
 }
