@@ -51,6 +51,12 @@ impl Program for M1Program {
             Input::KeyDown(Scancode::DOWN) => {
                 self.tree.move_current(common::zones::ZoneMovement::Down);
             }
+            Input::KeyDown(Scancode::H) => {
+                self.tree.split_current(common::zones::ZoneBranch::Horizontal);
+            }
+            Input::KeyDown(Scancode::V) => {
+                self.tree.split_current(common::zones::ZoneBranch::Vertical);
+            }
             _ => {}
         }
     }
