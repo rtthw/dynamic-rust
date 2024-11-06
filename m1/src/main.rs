@@ -39,6 +39,18 @@ impl Program for M1Program {
             Input::KeyDown(Scancode::Q) => {
                 self.should_exit = true;
             }
+            Input::KeyDown(Scancode::LEFT) => {
+                self.tree.move_current(common::zones::ZoneMovement::Left);
+            }
+            Input::KeyDown(Scancode::RIGHT) => {
+                self.tree.move_current(common::zones::ZoneMovement::Right);
+            }
+            Input::KeyDown(Scancode::UP) => {
+                self.tree.move_current(common::zones::ZoneMovement::Up);
+            }
+            Input::KeyDown(Scancode::DOWN) => {
+                self.tree.move_current(common::zones::ZoneMovement::Down);
+            }
             _ => {}
         }
     }

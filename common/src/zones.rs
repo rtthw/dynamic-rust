@@ -102,7 +102,29 @@ impl ZoneTree {
             return;
         };
         match movement {
-            ZoneMovement::Left => {}
+            ZoneMovement::Left => {
+                if matches!(kind, ZoneBranch::Horizontal) {
+                    let mut last_topmost: Option<&Zone> = None;
+                    'find: for leaf in leaves.iter() {
+                        let Some(current) = leaf.topmost_zone() else { continue; };
+                        if current.id == self.current {
+                            if let Some(zone) = last_topmost {
+                                self.current = zone.id;
+                                return;
+                            } else {
+                                break 'find;
+                            }
+                        }
+                        last_topmost = Some(current);
+                    }
+                    // The leftmost zone was either never found, or invalid. Set to last topmost.
+                    for leaf in leaves.iter().rev() {
+                        let Some(current) = leaf.topmost_zone() else { continue; };
+                        self.current = current.id;
+                        return;
+                    }
+                }
+            }
             ZoneMovement::Right => {}
             ZoneMovement::Up => {}
             ZoneMovement::Down => {}
@@ -199,6 +221,20 @@ impl ZoneNode {
         }
     }
 
+    pub fn topmost_zone(&self) -> Option<&Zone> {
+        match self {
+            ZoneNode::Branch(_kind, leaves) => {
+                for leaf in leaves {
+                    if let Some(zone) = leaf.topmost_zone() {
+                        return Some(zone);
+                    }
+                }
+                None
+            }
+            ZoneNode::Leaf(zone) => Some(zone),
+        }
+    }
+    
     pub fn topmost_zone_mut(&mut self) -> Option<&mut Zone> {
         match self {
             ZoneNode::Branch(_kind, leaves) => {
@@ -215,6 +251,17 @@ impl ZoneNode {
 
     pub fn is_branch(&self) -> bool {
         matches!(self, ZoneNode::Branch(_, _))
+    }
+
+    /// Whether this node is a leaf and has the given ID, or is a branch and has the given ID in its
+    /// hierarchy somewhere.
+    pub fn has_id(&self, needle_id: u32) -> bool {
+        match self {
+            ZoneNode::Branch(_, leaves) => {
+                leaves.iter().any(|l| l.has_id(needle_id))
+            }
+            ZoneNode::Leaf(Zone { id }) => id == &needle_id,
+        }
     }
 }
 
