@@ -77,7 +77,17 @@ impl ZoneNode {
         match self {
             ZoneNode::Branch(ZoneBranch::Horizontal, leaves) => {
                 let main_width = area.width / leaves.len() as u16;
-                let last_width = area.width - (main_width * (leaves.len() - 1) as u16);    
+                let i_len = leaves.len() - 1;
+                let mut real_area = area;
+                for (index, leaf) in leaves.iter_mut().enumerate() {
+                    let (leaf_area, area) = if index == i_len {
+                        (real_area, Rect::ZERO)
+                    } else {
+                        real_area.hsplit_len(main_width)
+                    };
+                    real_area = area;
+                    leaf.render_with_cb(cb, leaf_area, buf);
+                }
             }
             ZoneNode::Branch(ZoneBranch::Vertical, leaves) => {
                 let main_height = area.height / leaves.len() as u16;

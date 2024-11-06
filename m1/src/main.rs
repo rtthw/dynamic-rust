@@ -7,7 +7,7 @@ use common::{dreg::prelude::*, zones::ZoneTree};
 
 fn main() -> Result<()> {
     let mut tree = ZoneTree::new();
-    tree.split_current(common::zones::ZoneBranch::Vertical);
+    tree.split_current(common::zones::ZoneBranch::Horizontal);
     CrosstermPlatform::new()?
         .run(M1Program {
             should_exit: false,
